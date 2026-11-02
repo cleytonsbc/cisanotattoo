@@ -429,7 +429,7 @@ FOTOS.forEach(([arq, titulo], i) => {
   const b = document.createElement("button");
   b.className = "m" + (i + 1);
   b.innerHTML = `<img src="img/tattoo-${arq}.webp" alt="Tattoo: ${titulo}" loading="lazy"><span>${titulo}</span>`;
-  b.onclick = () => abreFoto(arq, titulo);
+  b.onclick = () => abreFoto(i);
   mosaico.append(b);
 });
 
@@ -574,20 +574,24 @@ function mostra(i) {
   $("l-ant").disabled = atual <= 1;
   $("l-prox").disabled = atual >= TOTAL - 1;
 }
-function abreFoto(arq, titulo) {
+let fotoAtual = 0;
+function abreFoto(i) {
+  fotoAtual = (i + FOTOS.length) % FOTOS.length;  // circular: da ultima volta para a primeira
+  const [arq, titulo] = FOTOS[fotoAtual];
   folha.classList.add("foto");
   folha.innerHTML = `<img src="img/tattoo-${arq}.webp" alt="Tattoo: ${titulo}">`;
   $("l-titulo").textContent = titulo;
-  $("l-pos").textContent = "Trabalho do estúdio · @cisano_estudio";
+  $("l-pos").textContent = `Trabalho ${fotoAtual + 1} de ${FOTOS.length} · @cisano_estudio`;
   $("l-whats").href = `${WHATS}?text=${encodeURIComponent(`Olá Jorge! Vi o trabalho "${titulo}" e quero conversar sobre uma tattoo.`)}`;
-  $("l-ant").hidden = $("l-prox").hidden = true;
-  abreLeitor();
+  $("l-ant").hidden = $("l-prox").hidden = false;
+  $("l-ant").disabled = $("l-prox").disabled = false;
+  if (leitor.hidden) abreLeitor();
 }
 function fecha() {
   leitor.hidden = true; document.body.style.overflow = "";
   if (origem) origem.focus();
 }
-const passo = d => { if (!folha.classList.contains("foto")) mostra(atual + d); };
+const passo = d => folha.classList.contains("foto") ? abreFoto(fotoAtual + d) : mostra(atual + d);
 $("l-fechar").onclick = fecha;
 $("l-ant").onclick = () => passo(-1);
 $("l-prox").onclick = () => passo(1);
